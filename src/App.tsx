@@ -1,21 +1,80 @@
-import { ProductCard } from './components/ProductCard';
-import { products } from './data/products';
+import { useEffect, useState } from 'react';
+
+import { Navigate, Route, Routes } from 'react-router-dom';
+
+import { Header } from './components/Header';
+import { StorePage } from './components/StorePage';
+import type { CartItem, Product } from './interfaces/product';
+import { CartDrawer } from './components/CartDrawer';
 
 function App() {
-  return (
-    <div className="min-h-screen bg-gray-50 p-8 text-gray-900">
-      <header className="max-w-5xl mx-auto mb-12">
-        <h1 className="text-3xl font-bold">React Starter Cart</h1>
-        <p className="text-gray-500">Prueba técnica de componentes y estado global</p>
-      </header>
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const savedCart = localStorage.getItem('REACTstore_cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
 
-      <main className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </main>
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('REACTstore_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+  const addToCart = (product: Product) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+
+      return [...prevCart, { ...product, quantity: 1 }];
+    });
+  };
+
+  const updateQuantity = (id: number, delta: number) => {
+    setCart(prevCart => {
+      return prevCart
+        .map(item => {
+          if (item.id === id) {
+            return { ...item, quantity: item.quantity + delta };
+          }
+          return item;
+        })
+        .filter(item => item.quantity > 0);
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <Header cartCount={totalItems} onCartOpen={() => setIsDrawerOpen(true)} />
+
+      <Routes>
+        <Route path="/" element={<Navigate to="/page/1" replace />} />
+        <Route
+          path="/page/:pageNumber"
+          element={
+            <StorePage
+              onAddToCart={(p) => addToCart(p)}
+            />
+          }
+        />
+      </Routes>
+
+      <CartDrawer
+        isOpen={isDrawerOpen}
+        cartItems={cart}
+        onClose={() => setIsDrawerOpen(false)}
+        onUpdateQuantity={updateQuantity}
+      />
     </div>
   );
 }
 
 export default App;
+
