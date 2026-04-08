@@ -5,10 +5,10 @@ interface Props {
   cartItems: CartItem[];
   onClose: () => void;
   onUpdateQuantity: (id: number, delta: number) => void;
+  onCheckout: () => void;
 }
 
-export const CartDrawer = ({ isOpen, cartItems, onClose, onUpdateQuantity }: Props) => {
-  // Calculamos el total real: precio * cantidad
+export const CartDrawer = ({ isOpen, cartItems, onClose, onUpdateQuantity, onCheckout }: Props) => {
   const total = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
   return (
@@ -57,12 +57,10 @@ export const CartDrawer = ({ isOpen, cartItems, onClose, onUpdateQuantity }: Pro
                       </p>
 
                       <div className="flex justify-between items-center mt-2">
-                        {/* Precio total de la línea (precio unidad * cantidad) */}
                         <p className="text-indigo-600 font-bold text-sm">
                           {(item.price * item.quantity).toFixed(2)}€
                         </p>
 
-                        {/* Selector de Cantidad */}
                         <div className="flex items-center bg-gray-50 rounded-lg border border-gray-100 p-0.5 gap-1">
                           <button
                             onClick={() => onUpdateQuantity(item.id, -1)}
@@ -105,6 +103,7 @@ export const CartDrawer = ({ isOpen, cartItems, onClose, onUpdateQuantity }: Pro
             <button
               disabled={cartItems.length === 0}
               className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-indigo-100"
+              onClick={onCheckout}
             >
               Finalizar pedido
             </button>

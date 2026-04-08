@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
 import { Header } from './components/Header';
 import { StorePage } from './components/StorePage';
 import type { CartItem, Product } from './interfaces/product';
 import { CartDrawer } from './components/CartDrawer';
+import { PaymentPage } from './components/PaymentPage';
 
 function App() {
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -50,6 +51,14 @@ function App() {
     });
   };
 
+  const navigate = useNavigate();
+
+  const handleCheckout = () => {
+    setCart([]); 
+    setIsDrawerOpen(false);
+    navigate('/payment');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <Header cartCount={totalItems} onCartOpen={() => setIsDrawerOpen(true)} />
@@ -64,6 +73,7 @@ function App() {
             />
           }
         />
+        <Route path="/payment" element={<PaymentPage />} />
       </Routes>
 
       <CartDrawer
@@ -71,6 +81,7 @@ function App() {
         cartItems={cart}
         onClose={() => setIsDrawerOpen(false)}
         onUpdateQuantity={updateQuantity}
+        onCheckout={handleCheckout}
       />
     </div>
   );
