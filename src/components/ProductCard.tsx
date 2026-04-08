@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import type { Product } from '../interfaces/product';
 
 interface Props {
@@ -6,18 +7,29 @@ interface Props {
 }
 
 export const ProductCard = ({ product, onAddToCart }: Props) => {
+  const navigate = useNavigate();
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm transition-all duration-500 hover:shadow-2xl hover:scale-105 hover:z-10 group">
-      <div className="h-48 overflow-hidden">
+    <div
+      onClick={() => navigate(`/product/${product.id}`)}
+      className="bg-white border border-gray-200 rounded-xl shadow-sm transition-all duration-500 hover:shadow-2xl hover:scale-105 hover:z-10 group cursor-pointer"
+    >
+      <div
+        onClick={() => navigate(`/product/${product.id}`)}
+        className="cursor-pointer overflow-hidden rounded-xl mb-4 h-48 bg-gray-50"
+      >
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full group-hover:scale-110 duration-500 "
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
       </div>
 
       <div className="p-4">
-        <h3 className="text-lg font-extrabold text-gray-950 truncate" title={product.name}>
+        <h3
+          className="text-lg font-extrabold text-gray-950 truncate cursor-pointer hover:text-indigo-600 transition-colors"
+          title={product.name}
+          onClick={() => navigate(`/product/${product.id}`)}
+        >
           {product.name}
         </h3>
         <p className="text-gray-600 text-sm line-clamp-2 h-10 mt-1">
@@ -30,7 +42,10 @@ export const ProductCard = ({ product, onAddToCart }: Props) => {
           </data>
 
           <button
-            onClick={() => onAddToCart(product)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
             className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors active:scale-95"
           >
             Añadir a la cesta

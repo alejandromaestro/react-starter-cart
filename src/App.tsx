@@ -7,6 +7,8 @@ import { StorePage } from './components/StorePage';
 import type { CartItem, Product } from './interfaces/product';
 import { CartDrawer } from './components/CartDrawer';
 import { PaymentPage } from './components/PaymentPage';
+import { ProductDetailPage } from './components/ProductDetailPage';
+import { Toast } from './components/Toast';
 
 function App() {
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -36,6 +38,7 @@ function App() {
 
       return [...prevCart, { ...product, quantity: 1 }];
     });
+    showNotification(`¡${product.name} añadido! ✅`);
   };
 
   const updateQuantity = (id: number, delta: number) => {
@@ -54,9 +57,18 @@ function App() {
   const navigate = useNavigate();
 
   const handleCheckout = () => {
-    setCart([]); 
+    setCart([]);
     setIsDrawerOpen(false);
     navigate('/payment');
+  };
+
+  const [notification, setNotification] = useState<string | null>(null);
+
+  const showNotification = (message: string) => {
+    setNotification(message);
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   return (
@@ -73,6 +85,7 @@ function App() {
             />
           }
         />
+        <Route path="/product/:id" element={<ProductDetailPage onAddToCart={addToCart} />} />
         <Route path="/payment" element={<PaymentPage />} />
       </Routes>
 
@@ -83,6 +96,7 @@ function App() {
         onUpdateQuantity={updateQuantity}
         onCheckout={handleCheckout}
       />
+      <Toast message={notification} />
     </div>
   );
 }
