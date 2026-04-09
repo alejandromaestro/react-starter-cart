@@ -9,6 +9,7 @@ import { CartDrawer } from './components/CartDrawer';
 import { PaymentPage } from './components/PaymentPage';
 import { ProductDetailPage } from './components/ProductDetailPage';
 import { Toast } from './components/Toast';
+import { NotFoundPage } from './components/NotFoundPage';
 
 function App() {
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -40,6 +41,8 @@ function App() {
     });
     showNotification(`¡${product.name} añadido! ✅`);
   };
+
+  const [searchTerm, setSearchTerm] = useState('');
 
   const updateQuantity = (id: number, delta: number) => {
     setCart(prevCart => {
@@ -73,7 +76,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      <Header cartCount={totalItems} onCartOpen={() => setIsDrawerOpen(true)} />
+      <Header
+        cartCount={totalItems}
+        onCartOpen={() => setIsDrawerOpen(true)}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm} 
+      />
 
       <Routes>
         <Route path="/" element={<Navigate to="/page/1" replace />} />
@@ -81,12 +89,14 @@ function App() {
           path="/page/:pageNumber"
           element={
             <StorePage
-              onAddToCart={(p) => addToCart(p)}
+              onAddToCart={addToCart}
+              searchTerm={searchTerm}
             />
           }
         />
         <Route path="/product/:id" element={<ProductDetailPage onAddToCart={addToCart} />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
 
       <CartDrawer

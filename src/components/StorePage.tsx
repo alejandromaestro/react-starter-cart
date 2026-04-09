@@ -1,4 +1,4 @@
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { products as allProducts } from '../data/products';
 import { ProductCard } from './ProductCard';
 import { Pagination } from './Pagination';
@@ -8,21 +8,31 @@ import { ProductSkeleton } from './ProductSkeleton';
 
 interface Props {
   onAddToCart: (p: Product) => void;
+  searchTerm: string;
 }
 
 const ITEMS_PER_PAGE = 6;
 
-export const StorePage = ({ onAddToCart }: Props) => {
+export const StorePage = ({ onAddToCart, searchTerm }: Props) => {
   const { pageNumber } = useParams<{ pageNumber: string }>();
   const navigate = useNavigate();
 
+  const filteredProducts = allProducts.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   const currentPage = Number(pageNumber) || 1;
-  const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
 
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (currentPage > totalPages) {
+      navigate('/page/1', { replace: true });
+      return;
+    }
 
     if (isNaN(currentPage) || currentPage < 1) {
       navigate('/page/1', { replace: true });
@@ -38,11 +48,11 @@ export const StorePage = ({ onAddToCart }: Props) => {
 
     const lastItemIndex = currentPage * ITEMS_PER_PAGE;
     const firstItemIndex = lastItemIndex - ITEMS_PER_PAGE;
-    const nextProducts = allProducts.slice(firstItemIndex, lastItemIndex);
+    const nextProducts = filteredProducts.slice(firstItemIndex, lastItemIndex);
 
     setDisplayedProducts(nextProducts);
     setIsLoading(false);
-  }, [pageNumber, navigate]);
+  }, [pageNumber, navigate, searchTerm, totalPages]);
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -51,7 +61,7 @@ export const StorePage = ({ onAddToCart }: Props) => {
           Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
             <ProductSkeleton key={i} />
           ))
-        ) : (
+        ) : displayedProducts.length > 0 ? (
           displayedProducts.map(p => (
             <ProductCard
               key={p.id}
@@ -59,14 +69,20 @@ export const StorePage = ({ onAddToCart }: Props) => {
               onAddToCart={onAddToCart}
             />
           ))
+        ) : (
+          <div className="col-span-full text-center py-20">
+            <p className="text-gray-400 text-lg">No hay productos que coincidan con "{searchTerm}"</p>
+          </div>
         )}
       </main>
 
-      <Pagination
-        total={totalPages}
-        current={currentPage}
-        onChange={(page) => navigate(`/page/${page}`)}
-      />
+      {totalPages > 1 && (
+        <Pagination
+          total={totalPages}
+          current={currentPage}
+          onChange={(page) => navigate(`/page/${page}`)}
+        />
+      )}
     </div>
   );
 };
